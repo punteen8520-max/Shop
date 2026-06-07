@@ -1,14 +1,5 @@
-<center>						
-<h5 style="color: rgb(206, 0, 0);font-family: 'Kanit', sans-serif;">คำเตือน : อ่านรายละเอียดทั้งหมดให้จบก่อน แล้วค่อยกดซื้อหรือสอบถาม </h5>
-</center>
-<div id="return"></div>
-<div class="row">
 <?php
-  if (isset($_GET["cat"])) {
-    include('_page/shop2.php');
-  } else {
-	  
-$query2 = $connect->query("SELECT * FROM products");   
+	$query2 = $connect->query("SELECT * FROM products WHERE cat = '".$_GET['cat']."'");    
 	while($row = $query2->fetch_assoc()){
 		
         $stock_price = "฿ ".$row['price'];
@@ -71,5 +62,4 @@ if ($_SESSION['username'] == NULL) {
                   </div>
                 </div>
             </div>
-  <?php } } }?>
-</div>
+  <?php } } ?>
