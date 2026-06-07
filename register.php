@@ -1,46 +1,53 @@
-<?php if(!$_SESSION['username']){ ?>
-      <div class="card mt-4 shadow-dark radius-border web-bg-white ml-auto mr-auto" style="max-width:500px;">
-        <div class="card-body">
-          <h4 class="mt-0 mb-4 text-center"><i class="fal fa-user-plus mr-2"></i>สมัครสมาชิก</h4>
+<?php
+require('../system.php');
 
-          <div class="input-group mb-4">
-            <div class="input-group-prepend">
-              <span class="input-group-text web-bg-dark border-dark"><i class="fal fa-user"></i></span>
-            </div>
-            <input id="username" type="text" class="form-control form-control-sm web-form-control" placeholder="Username ( ชื่อผู้ใช้งาน )" required autocomplete="off">
-          </div>
-
-          <div class="input-group mb-4">
-            <div class="input-group-prepend">
-              <span class="input-group-text web-bg-dark border-dark"><i class="fal fa-key"></i></span>
-            </div>
-            <input id="password" type="password" class="form-control form-control-sm web-form-control" placeholder="Password ( รหัสผ่าน )" required autocomplete="off">
-          </div>
-
-          <div class="input-group mb-4">
-            <div class="input-group-prepend">
-              <span class="input-group-text web-bg-dark border-dark"><i class="fal fa-key"></i></span>
-            </div>
-            <input id="repassword" type="password" class="form-control form-control-sm web-form-control" placeholder="Confirm-Password ( ยืนยัน-รหัสผ่าน )" required autocomplete="off">
-          </div>
-
-          <div class="input-group mb-4">
-            <div class="input-group-prepend">
-              <span class="input-group-text web-bg-dark border-dark"><i class="fal fa-envelope"></i></span>
-            </div>
-            <input id="email" type="email" class="form-control form-control-sm web-form-control" placeholder="E-mail ( อีเมล )" required>
-          </div>
-		  
-          <div class="form-group">
-			<div class="row justify-content-center">
-				<div class="g-recaptcha" data-sitekey="6LeOlEEeAAAAALVCmq9mWSG08GKV1BZ7FRklcOK5"></div>
-			</div>
-		  </div>		  
-
-          <button id="register" class="btn btn-sm web-btn-orange my-2 my-sm-0 mr-2 w-100" type="button"><i class="fal fa-user-plus mr-1"></i> สมัครสมาชิก</button>
-
-        </div>
-      </div>
-<?php }else{ ?> 
-<script>window.location.href = "./"</script>
-<?php } ?>
+if(isset($_POST['register'])){
+	if(empty($_POST['username']) || empty($_POST['email']) || empty($_POST['password']))  {
+		$errorMSG = "กรุณาอย่าเว้นช่องว่าง";
+	}else{	
+  if ($result['success']) {	
+	if (!preg_match('/^[a-zA-Z0-9\_]*$/', $_POST['username'])) {
+		$errorMSG = "ชื่อผู้ใช้ไม่ถูกต้อง ต้องเป็น A-Z 0-9 เท่านั้น !!.";
+	}
+	if(mb_strlen($_POST['username']) <= 4) {
+		$errorMSG = "ชื่อผู้ใช้อย่างน้อย 5 ตัวขึ้นไป !!";
+	}
+	if(mb_strlen($_POST['username']) >= 25) {
+		$errorMSG = "ชื่อผู้ใช้สูงสุด 24 ตัวขึ้นไป !!";
+	}
+	if(strlen($_POST['password']) <= 4) {
+		$errorMSG = "รหัสผ่านอย่างน้อย 5 ตัวขึ้นไป !!";
+	}
+	if(mb_strlen($_POST['password']) >= 25) {
+		$errorMSG = "รหัสผ่านสูงสุด 24 ตัว !!";
+	}
+	if($_POST['password'] != $_POST['repassword'])  {
+		  $errorMSG = "รหัสผ่าน ไม่ตรงกัน !! !!";
+        }
+        $query_user_reg = $connect->query("SELECT * FROM member WHERE username = '".$_POST['username']."'");
+       $reg_user = $query_user_reg->fetch_assoc();
+       if ($reg_user) {
+		   $errorMSG = "ชื่อผู้ใช้ มีผู้ใช้งานไปแล้ว !!";
+        }else{
+	   $query_email_reg = $connect->query("SELECT * FROM member WHERE email = '".$_POST['email']."'");
+       $reg_email = $query_email_reg->fetch_assoc();		
+       if ($reg_email) {
+		   $errorMSG = "อีเมลนี้มีผู้ใช้งานไปแล้ว";
+        }else{	
+          $password_hash = password_hash($_POST['password'], PASSWORD_DEFAULT);
+          $query_reg2 = $connect->query("INSERT INTO member (username,email,ip,password) VALUES ('".$_POST['username']."','".$_POST['email']."','".$_SERVER['REMOTE_ADDR']."','".$password_hash."')");         
+        }
+	}
+	}else{	
+	   $errorMSG = "กรุณายืนยันตัวตน";
+    }
+	
+    }
+    if(empty($errorMSG)){
+        echo json_encode(['code'=>200,]);
+    }else{
+        echo json_encode(['code'=>500, 'msg'=>$errorMSG]);
+    }
+  
+}
+?>
